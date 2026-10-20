@@ -65,7 +65,55 @@ body{min-height:100vh;display:grid;place-items:center;overflow-x:auto;font-famil
     try{var v=localStorage.getItem('spa-cert-'+id);if(v)$(id).value=v}catch(e){}
     $(id).addEventListener('input',save);
   });
-    save();sum.focus();
+})();
+</script>
+<style>
+.gen{left:24.9%;width:50.2%;top:87.3%;display:flex;flex-direction:column;align-items:center;gap:.7cqw}
+.gen button{background:rgba(10,9,7,.35);border:1px solid rgba(217,177,120,.7);border-radius:.9cqw;color:var(--gold);font:400 .95cqw "Montserrat",sans-serif;padding:.9cqw 2cqw;cursor:pointer;transition:background .2s}
+.gen button:hover{background:rgba(217,177,120,.14)}
+.res{display:flex;gap:.7cqw;width:100%}
+.res[hidden]{display:none}
+.res input{flex:1;min-width:0;background:rgba(10,9,7,.6);border:1px solid rgba(217,177,120,.5);border-radius:.6cqw;color:var(--ink);font:400 .9cqw "Montserrat",sans-serif;padding:.7cqw .9cqw;outline:0}
+.res button{padding:.7cqw 1.4cqw}
+input[readonly]{cursor:default}
+@media print{.gen{display:none}}
+</style>
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  function enc(s){return btoa(unescape(encodeURIComponent(s))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
+  function dec(s){s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';return decodeURIComponent(escape(atob(s)))}
+  var data=null;
+  try{
+    var m=(location.hash+'&'+location.search).match(/[#?&]d=([A-Za-z0-9_\-]+)/);
+    if(m)data=JSON.parse(dec(m[1]));
+  }catch(e){data=null}
+  if(data){
+    $('sum').value=data.s||'';$('to').value=data.t||'';$('from').value=data.f||'';
+    ['sum','to','from'].forEach(function(id){var el=$(id);el.readOnly=true;el.tabIndex=-1;el.setAttribute('aria-readonly','true')});
+    return;
+  }
+  var bar=document.createElement('div');
+  bar.className='abs gen';
+  bar.innerHTML='<button type="button" id="mk">Создать ссылку для подарка</button><div class="res" id="res" hidden><input id="lnk" readonly aria-label="Ссылка для получателя"><button type="button" id="cp">Копировать</button></div>';
+  $('cert').appendChild(bar);
+  $('mk').addEventListener('click',function(){
+    var s=$('sum').value.trim(),t=$('to').value.trim(),f=$('from').value.trim();
+    if(!s){$('sum').focus();return}
+    var base=location.href.split('#')[0].split('?')[0];
+    var l=$('lnk');
+    l.value=base+'#d='+enc(JSON.stringify({s:s,t:t,f:f}));
+    $('res').hidden=false;
+    l.focus();l.select();
+  });
+  $('cp').addEventListener('click',function(){
+    var l=$('lnk'),b=$('cp');
+    function ok(){b.textContent='Скопировано';setTimeout(function(){b.textContent='Копировать'},2000)}
+    l.focus();l.select();
+    try{
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(l.value).then(ok,function(){document.execCommand('copy');ok()})}
+      else{document.execCommand('copy');ok()}
+    }catch(e){}
   });
 })();
 </script>
